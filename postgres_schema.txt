@@ -1,0 +1,76 @@
+//have decided to change the DB to MONGO -- however, still accurate rep of schema
+
+Rlocations (city, state, zip)
+Rrestaurants (rest_id, name, location, food_type, menu, website)
+Rusers (user_id, name, dob, location, website, rests_liked, rests_visited)
+
+CREATE DATABASE NOEA;
+
+CREATE TABLE restaurants in NOEA
+(
+	_id
+	restname
+	zip
+	foodtype
+	website
+	bio
+	four_id
+);
+
+users {
+	user_id
+	name,
+	about,
+	dob, 
+	email
+	favfood
+}
+
+noeas
+{
+	user_id 
+	restname
+	zip
+	date
+	timeofrez
+	guests (array) {"guests": [{"user_id": user_id}, {"user_id": user_id}]}
+	typeinvite -----> (open, fonly, fof private); open invite - friends only - friends of 										friends - invite only
+}
+
+
+
+Server Methods *indicates required param -- can't be null
+
+POST /addRestaurant  (restname*, zip*, foodtype, website, bio)
+GET /findRestaurants (zip*)  
+GET /findRest (restname*, zip*)
+
+POST /adduser (user_id*, username*, about, dob, email, favfood)
+GET /finduser (user_id*)
+
+POST /addnoea (user_id*, restname*, zip*, date*, timeofrez*, guests, typeinvite)
+		--> will not let you add noea if you own another on the same day
+GET /findnoeas (user_id*)
+
+
+
+TODO::
+Alex
+--> Create add NOEA form     //
+--> add Search bar functionality  ///
+--> add images to discover        //
+--> Write server code!
+	--> write code to 
+
+
+Dre
+--> common NOEAs/general prof      
+--> Display more than one NOEA
+
+Caitlin
+--> Learn more
+
+General 
+--> Populate database
+--> Display more than one NOEA
+--> Add an API ("Twitter?")

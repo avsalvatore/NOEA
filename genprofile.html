@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="icon.png">
+
+    <title>NOEA</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="dashboard.css" rel="stylesheet">
+
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+    
+    <script>
+
+    var http = new XMLHttpRequest();
+    var http2 = new XMLHttpRequest();
+    var name;
+    var genname;
+
+    function getData(id) {
+      console.log("id:");
+        console.log(id);
+          var url = "https://noea.herokuapp.com/findUser?user_id=" + id;
+
+          http.open("GET", url, true);
+
+          http.onreadystatechange = function() {
+              if(http.readyState == 4 && http.status == 200) {
+                data = JSON.parse(http.responseText);
+
+                for(var i = 0; ((i < data.length) && (i < 10)); i++) {
+                  if (data[i].name) {
+                      document.getElementById("genname").innerHTML = data[i].name;
+                      genname = data[i].name;
+                  } else 
+                      document.getElementById("genname").innerHTML = "Anonymous";
+                  if (data[i].about) {
+                      document.getElementById('about').innerHTML = data[i].about;
+                  } else 
+                      document.getElementById('about').innerHTML = "This is the about section";
+                  if (data[i].dob) {
+                      document.getElementById('dob').innerHTML = data[i].dob;
+                  } else 
+                      document.getElementById('dob').innerHTML = "Unknown";
+                  if (data[i].email) {
+                      document.getElementById('email').innerHTML = data[i].email;
+                  } else 
+                      document.getElementById('email').innerHTML = "No email on file";
+                  if (data[i].favfood) {
+                      document.getElementById('favfood').innerHTML = data[i].favfood;
+                  } else 
+                      document.getElementById('favfood').innerHTML = "Unknown";
+                }
+              }
+          }
+          http.send();
+    }
+
+    function getNOEAs(myid, theirid) {
+      console.log("in getNOEAs");
+      console.log(myid);
+      console.log(theirid);
+      var url = "https://noea.herokuapp.com/findnoeas?user_id=" + myid;
+      http2.open("GET", url, true);
+      http2.onreadystatechange = function() {
+        if(http2.readyState == 4 && http2.status == 200) {
+            data = JSON.parse(http2.responseText);
+            console.log(data);
+          
+            for(var i = 0; ((i < data.length) && (i < 10)); i++) {                     
+              if (data[i].guests == theirid) {
+                var mylink = "<td> <a href='profile.html'>";
+                var link = "<td> <a href='genprofile.html?data=" + String(myid) + "'>";
+                document.getElementById("withme").innerHTML += "<tr>" + "<td>" + data[i].date + "</td>" + "<td>" + data[i].restname + "</td>" + "<td>" + data[i].timeofrez + "</td>" + mylink + name + "</td>" + link + genname + "</td>" + "</tr>";
+              }
+            }
+        }
+      }
+      http2.send();
+    }
+
+
+    function statusChangeCallback(response) {
+      console.log(window.params);
+      if(window.params.data){
+        getData(window.params.data);
+      }
+      if (response.status === 'connected') {
+        // Logged into your app and Facebook.
+        FB.api('/me', function(response) {
+            console.log("here");
+            name = response.name;
+            //document.getElementById("name").innerHTML = response.name;
+            console.log(JSON.stringify(response));
+            getNOEAs(response.id, window.params.data);
+        });
+      } else if (response.status === 'not_authorized') {
+        // The person is logged into Facebook, but not your app.
+        document.getElementById("name").innerHTML = "Anonymous";
+
+      } else {
+        document.getElementById("name").innerHTML = "Anonymous";
+      }
+    }
+
+    // This function is called when someone finishes with the Login
+    // Button.  See the onlogin handler attached to it in the sample
+    // code below.
+    function checkLoginState() {
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+    }
+
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '671924826267701',
+        cookie     : true,  
+        xfbml      : true,  
+        version    : 'v2.3' 
+      });
+
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+
+    };
+
+    // Load the SDK asynchronously
+    (function(d, s, id) {
+      var js, fjs = d.getElementsByTagName(s)[0];
+      if (d.getElementById(id)) return;
+      js = d.createElement(s); js.id = id;
+      js.src = "http://connect.facebook.net/en_US/sdk.js";
+      fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+
+    window.params = function(){
+      var params = {};
+      if(window.location.search) {
+          var param_array = window.location.href.split('?')[1].split('&');
+          for(var i in param_array){
+              x = param_array[i].split('=');
+              params[x[0]] = x[1];
+          }
+      }
+      return params;
+    }();
+
+    function search () {
+        console.log("search");
+          var zip = document.getElementById("zip").value;
+          window.location.href = "search.html?data=" + String(zip);
+        
+    };
+
+  </script>
+
+      <div id="fb-root"></div>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand">NOEA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><div class="fb-login-button" data-max-rows="1" data-size="large" data-show-faces="false" data-auto-logout-link="true"></div></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search by zip..." id="zip">
+              <button class="btn btn-default" type="button" onclick=search()>Go!</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li class="active"><a href="search.html">Discover<span class="sr-only">(current)</span></a></li>
+            <li><a href="myNOEAs.html">My NOEAs</a></li>
+            <li><a href="#">Eat Right Now</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+
+          <div class="jumbotron">
+            <h1 id="genname"></h1>
+          </div>
+
+          <div class="page-header">
+            <h1>About</h1>
+          </div>
+          <div class="well">
+            <p id='about'></p>
+          </div>
+          
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="panel panel-primary">
+            <div class="panel-heading">
+              <h3 class="panel-title">Favorite Food</h3>
+            </div>
+            <div class="panel-body" id='favfood'>
+            </div>
+          </div>
+        </div><!-- /.col-sm-4 -->
+        <div class="col-sm-4">
+          <div class="panel panel-success">
+            <div class="panel-heading">
+              <h3 class="panel-title">Date of Birth</h3>
+            </div>
+            <div class="panel-body" id='dob'>
+            </div>
+          </div>
+        </div><!-- /.col-sm-4 -->
+        <div class="col-sm-4">
+          <div class="panel panel-info">
+            <div class="panel-heading">
+              <h3 class="panel-title">Email</h3>
+            </div>
+            <div class="panel-body" id='email'>
+            </div>
+          </div>
+        </div><!-- /.col-sm-4 -->
+      </div>
+
+          <h1 class="page-header">NOEAs with me</h1>
+          <h2 id="status"></h2>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Restaurant</th>
+                  <th>Time</th>
+                  <th>Host</th>
+                  <th>Guests</th>
+                </tr>
+              </thead>
+              <tbody id="withme">
+              </tbody>
+            </table>
+          </div>
+          <div id="bubbles" class="row placeholders">
+            <div class="col-xs-6 col-sm-3 placeholder">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+  </body>
+</html>

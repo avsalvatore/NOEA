@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="icon.png">
+
+    <title>NOEA</title>
+
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+
+    <link href="dashboard.css" rel="stylesheet">
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true"></script>
+    <script>
+      var myLat = 0;
+      var myLng = 0;
+      var http = new XMLHttpRequest();
+      var http2 = new XMLHttpRequest();
+      var data;
+      var newbubble;
+      var id;
+      var name = "uninitialized";
+      var guests;
+
+      function statusChangeCallback(response) {
+        console.log('statusChangeCallback');
+        console.log(response);
+        if (response.status === 'connected') {
+          // Logged into your app and Facebook.
+          FB.api('/me', function(response) {
+              name = response.name;
+              id = response.id;
+              console.log(JSON.stringify(response));
+              getNOEAs();
+          });
+          
+        } else if (response.status === 'not_authorized') {
+          // The person is logged into Facebook, but not your app.
+            console.log("Not logged into app");
+          document.getElementById("status").innerHTML = "Please log " +
+            "into this app.";
+        } else {
+            console.log("Not logged into Facebook");
+          name = "Anonymous";
+          document.getElementById('status').innerHTML = "Please log " +
+            "into Facebook.";
+        }
+      }
+
+      // This function is called when someone finishes with the Login
+      // Button.  See the onlogin handler attached to it in the sample
+      // code below.
+      function checkLoginState() {
+        FB.getLoginStatus(function(response) {
+          statusChangeCallback(response);
+        });
+      }
+
+      window.fbAsyncInit = function() {
+        FB.init({
+          appId      : '671924826267701',
+          cookie     : true,  
+          xfbml      : true,  
+          version    : 'v2.3' 
+        });
+
+        FB.getLoginStatus(function(response) {
+          statusChangeCallback(response);
+        });
+
+      };
+
+      // Load the SDK asynchronously
+      (function(d, s, id) {
+        var js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) return;
+        js = d.createElement(s); js.id = id;
+        js.src = "http://connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+      }(document, 'script', 'facebook-jssdk'));
+
+      function findName(data) {
+        var guest = "";
+        var http2 = new XMLHttpRequest();
+        var url = "https://noea.herokuapp.com/finduser?user_id=" + data.guests;
+        http2.open("GET", url, true);
+        var link;
+        var myguests = "None";
+
+        http2.onreadystatechange = function() {
+          if(http2.readyState == 4 && http2.status == 200) {
+              //guests profile
+              newdata = JSON.parse(http2.responseText);
+
+              if(newdata.length > 0) {
+                var gid = newdata[0].user_id;
+                myguests = newdata[0].name;
+              }
+              var mylink = "<td> <a href='profile.html'>";
+              var link = "<td> <a href='genprofile.html?data=" + String(gid) + "'>";
+              var restlink = "<td> <a href='rests.html?restname=" + String(data.restname) + "&zip=" + String(data.zip) + "'>";
+              
+              document.getElementById("NOEA").innerHTML += "<tr>" + "<td>" + data.date + "</td>" + restlink + data.restname + "</td>" + "<td>" + data.timeofrez + "</td>" + mylink + name + "</td>" + link + myguests + "</td>" + "</tr>";
+
+              console.log(document.getElementById("NOEA").innerHTML);
+          }
+        }
+        http2.send();
+        //return link;
+      }
+
+
+      function getNOEAs() {
+          console.log(name);
+          if (name == "uninitialized") {
+              console.log("uninit");
+          } else {
+                var url = "https://noea.herokuapp.com/findnoeas?user_id=" + id;
+                http.open("GET", url, true);
+                http.onreadystatechange = function() {
+                  if(http.readyState == 4 && http.status == 200) {
+                      data = JSON.parse(http.responseText);
+                      console.log(data);
+                      console.log(data.length);
+                      for(var i = 0; ((i < data.length) && (i < 10)); i++) {                      if (data[i].restname) {
+                        console.log("calling find");
+                          //var mylink = "<td> <a href='profile.html'>";
+                          var link = findName(data[i]);
+                          // document.getElementById("NOEA").innerHTML += "<tr>" + "<td>" + data.date + "</td>" + "<td>" + data.restname + "</td>" + "<td>" + data.timeofrez + "</td>" + mylink + name + "</td>" + link[0] + link[1] + "</td>" + "</tr>";
+                        }
+                      }
+                  }
+                }
+            http.send();
+        }
+      }
+
+      function search () {
+        console.log("search");
+          var zip = document.getElementById("zip").value;
+          window.location.href = "search.html?data=" + String(zip);
+        
+      };
+
+    </script>
+    <div id="fb-root"></div>
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href='index.html'>NOEA</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="index.html">Home</a></li>
+            <li><a href="profile.html">Profile</a></li>
+            <li><div class="fb-login-button" data-max-rows="1" data-size="large" data-show-faces="false" data-auto-logout-link="true"></div></li>
+          </ul>
+          <form class="navbar-form navbar-right">
+            <input type="text" class="form-control" placeholder="Search by zip..." id="zip">
+              <button class="btn btn-default" type="button" onclick=search()>Go!</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+            <li><a href="search.html">Discover<span class="sr-only">(current)</span></a></li>
+            <li class="active"><a href="#">My NOEAs</a></li>
+            <li><a href="#">Eat Right Now</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <h1 class="page-header">My NOEAs</h1>
+          <h2 id="status"></h2>
+          <div class="table-responsive">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Restaurant</th>
+                  <th>Time</th>
+                  <th>Host</th>
+                  <th>Guests</th>
+                </tr>
+              </thead>
+              <tbody id="NOEA">
+              </tbody>
+            </table>
+          </div>
+          <div id="bubbles" class="row placeholders">
+            <div class="col-xs-6 col-sm-3 placeholder">
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+
+  </body>
+
