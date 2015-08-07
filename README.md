@@ -1,5 +1,5 @@
 #Title: 
-
+This is NOEA, a project developed for comp20 at Tufts. The server side code is written in node.js and is on heroku. 
 #Problem Statement:
 You're out in the city and want to grab food, but don't want to eat alone. 
 
